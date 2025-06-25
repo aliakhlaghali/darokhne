@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8" />
+<title>داروخانه بیمارستان امام حسین (ع)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+body {
+  font-family: Tahoma, sans-serif;
+  direction: rtl;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, #74b9ff, #81ecec);
+  color: #2d3436;
+}
+header {
+  background: #0984e3;
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+  font-size: 22px;
+  font-weight: bold;
+}
+.box {
+  max-width: 800px;
+  background: #fff;
+  margin: 20px auto;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0,0,0,.1);
+}
+input, button, textarea, select {
+  width: 100%;
+  margin: 8px 0;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+button {
+  background: linear-gradient(to right, #00b894, #55efc4);
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  transition: .3s;
+  border: none;
+}
+button:hover { transform: scale(1.03); }
+.hidden { display: none; }
+.table-wrap {
+  overflow-x: auto;
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  padding: 10px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  table-layout: fixed;
+  font-size: 15px;
+}
+th {
+  background: #dfe6e9;
+  font-weight: bold;
+  text-align: center;
+}
+td {
+  text-align: center;
+  font-family: Tahoma, sans-serif;
+}
+td:nth-child(1) { text-align: right; width: 22%; }
+td:nth-child(2), td:nth-child(3) { width: 12%; }
+td:nth-child(4) { width: 18%; }
+td:nth-child(5) { width: 20%; font-weight: bold; }
+td:nth-child(6) { width: 10%; }
+
+.statusLow {
+  color: #fff;
+  background-color: #d63031;
+  animation: blinkRed 1.2s linear infinite;
+}
+.statusExpired {
+  color: #000;
+  background-color: #f1c40f;
+  animation: blinkYellow 1.2s linear infinite;
+}
+.statusBoth {
+  color: #fff;
+  background: linear-gradient(45deg, #d63031, #f1c40f);
+  animation: blinkBoth 1.2s linear infinite;
+}
+@keyframes blinkRed {
+  0%, 100% { background-color: #d63031; }
+  50% { background-color: #e74c3c; }
+}
+@keyframes blinkYellow {
+  0%, 100% { background-color: #f1c40f; }
+  50% { background-color: #ffeaa7; }
+}
+@keyframes blinkBoth {
+  0%, 100% { background: linear-gradient(45deg, #d63031, #f1c40f); }
+  50% { background: linear-gradient(45deg, #e74c3c, #ffeaa7); }
+}
+.footer {
+  text-align: center;
+  margin-top: 30px;
+  font-size: 14px;
+  opacity: .9;
+}
+.footer a {
+  margin: 0 10px;
+  text-decoration: none;
+  color: #2d3436;
+  font-weight: bold;
+  animation: blink 1s infinite;
+}
+.footer img {
+  width: 20px;
+  vertical-align: middle;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+</style>
+</head>
+<body>
+
+<header>داروخانه بیمارستان امام حسین (ع)</header>
+
+<div class="box" id="home-page">
+  <button onclick="show('login-box')">📦 مدیریت انبار</button>
+  <button onclick="show('report-form')">📝 ثبت گزارش کسری</button>
+</div>
+
+<div class="box hidden" id="report-form">
+  <input id="fname" placeholder="نام" required>
+  <input id="lname" placeholder="نام خانوادگی" required>
+  <input id="reportText" placeholder="نام داروی دارای کسری" required>
+  <button onclick="submitReport()">📤 ارسال گزارش</button>
+  <button onclick="show('home-page')">🔙 بازگشت</button>
+</div>
+
+<div class="box hidden" id="login-box">
+  <input id="login-username" placeholder="نام کاربری">
+  <input id="login-password" type="password" placeholder="رمز عبور">
+  <button onclick="login()">ورود</button>
+  <button onclick="show('home-page')">🔙 بازگشت</button>
+</div>
+
+<div class="box hidden" id="main-menu">
+  <button onclick="show('main-app')">💊 ورود به انبار</button>
+  <button id="admin-reports-btn" class="hidden" onclick="loadReports();show('admin-reports')">📄 گزارش‌های کسری</button>
+  <button id="add-user-btn" class="hidden" onclick="show('add-user-box')">➕ تعریف کاربر جدید</button>
+  <button onclick="logout()">🚪 خروج</button>
+</div>
+
+<div class="box hidden" id="add-user-box">
+  <input id="new-username" placeholder="نام کاربری جدید">
+  <input id="new-password" placeholder="رمز عبور">
+  <select id="new-role">
+    <option value="user">کاربر معمولی</option>
+    <option value="admin">مدیر</option>
+  </select>
+  <button onclick="addUser()">➕ افزودن</button>
+  <button onclick="show('main-menu')">🔙 بازگشت</button>
+</div>
+
+<div class="box hidden" id="main-app">
+  <form id="drug-form">
+    <input id="name" placeholder="نام دارو" required>
+    <input id="quantity" type="number" placeholder="تعداد" required>
+    <input id="minQuantity" type="number" placeholder="حداقل مجاز" required>
+    <input id="expiry" type="date" required>
+    <button type="submit">➕ افزودن دارو</button>
+  </form>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>نام</th><th>تعداد</th><th>حداقل</th><th>انقضا</th><th>وضعیت</th><th>حذف</th>
+        </tr>
+      </thead>
+      <tbody id="drug-table"></tbody>
+    </table>
+  </div>
+  <button onclick="show('main-menu')">🔙 بازگشت</button>
+</div>
+
+<div class="box hidden" id="admin-reports">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>نام</th><th>نام‌خانوادگی</th><th>نام دارو</th><th>زمان</th></tr>
+      </thead>
+      <tbody id="reports-table"></tbody>
+    </table>
+  </div>
+  <button onclick="exportReports()">📊 خروجی CSV</button>
+  <button onclick="show('main-menu')">🔙 بازگشت</button>
+</div>
+
+<div class="footer">
+  طراحی: میرزا علی • 
+  <a href="https://t.me/mirza.ali.official" target="_blank"><img src="https://img.icons8.com/color/48/telegram-app.png" alt="telegram"> @mirza.ali.official</a>
+  <a href="https://instagram.com/mirza.ali.official" target="_blank"><img src="https://img.icons8.com/color/48/instagram-new.png" alt="instagram"> @mirza.ali.official</a>
+</div>
+
+<script>
+let users = JSON.parse(localStorage.getItem('ph_users') || '[]');
+let drugs = JSON.parse(localStorage.getItem('ph_drugs') || '[]');
+let reports = JSON.parse(localStorage.getItem('ph_reports') || '[]');
+const DEF = [['admin','admin123','admin'],['11','11','user']];
+DEF.forEach(u=>{if(!users.some(x=>x.username==u[0]))users.push({username:u[0],password:u[1],role:u[2]})});
+localStorage.setItem('ph_users',JSON.stringify(users));
+
+let currentUser = null;
+
+function show(id){
+  document.querySelectorAll('.box').forEach(b=>b.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+
+function login(){
+  const u = document.getElementById('login-username').value.trim();
+  const p = document.getElementById('login-password').value.trim();
+  const user = users.find(x => x.username === u && x.password === p);
+  if(!user){ alert('نام کاربری یا رمز اشتباه است'); return; }
+  currentUser = user;
+  document.getElementById('admin-reports-btn').classList.toggle('hidden', user.role !== 'admin');
+  document.getElementById('add-user-btn').classList.toggle('hidden', user.role !== 'admin');
+  show('main-menu');
+  loadDrugs();
+}
+
+function logout(){ currentUser = null; show('home-page'); }
+
+function addUser(){
+  const username = document.getElementById('new-username').value.trim();
+  const password = document.getElementById('new-password').value.trim();
+  const role     = document.getElementById('new-role').value;
+  if(!username || !password){ alert("همه فیلدها را پر کنید"); return; }
+  if(users.some(u=>u.username === username)){ alert("کاربر تکراری است"); return; }
+  users.push({username, password, role});
+  localStorage.setItem('ph_users', JSON.stringify(users));
+  alert("کاربر جدید افزوده شد");
+  show('main-menu');
+}
+
+document.getElementById('drug-form').onsubmit = e => {
+  e.preventDefault();
+  drugs.push({
+    name: document.getElementById('name').value.trim(),
+    quantity: +document.getElementById('quantity').value,
+    minQuantity: +document.getElementById('minQuantity').value,
+    expiry: document.getElementById('expiry').value
+  });
+  localStorage.setItem('ph_drugs', JSON.stringify(drugs));
+  e.target.reset();
+  loadDrugs();
+};
+
+function loadDrugs(){
+  const tb = document.getElementById('drug-table'); tb.innerHTML = '';
+  const now = new Date();
+  const sorted = [...drugs].sort((a, b) => a.name.localeCompare(b.name));
+  sorted.forEach((d, i) => {
+    const isLow = d.quantity < d.minQuantity;
+    const isExp = new Date(d.expiry) < now;
+    let statusTxt = 'سالم', statusCls = '';
+    
+    if (isLow && isExp) {
+      statusTxt = 'کسری + انقضا';
+      statusCls = 'statusBoth';
+    } else if (isLow) {
+      statusTxt = 'کسری دارو';
+      statusCls = 'statusLow';
+    } else if (isExp) {
+      statusTxt = 'انقضا';
+      statusCls = 'statusExpired';
+    }
+
+    tb.insertAdjacentHTML('beforeend', `
+      <tr>
+        <td>${d.name}</td>
+        <td>${d.quantity}</td>
+        <td>${d.minQuantity}</td>
+        <td>${d.expiry}</td>
+        <td class="${statusCls}">${statusTxt}</td>
+        <td>${currentUser?.role === 'admin' ? `<button onclick="delDrug(${i})">حذف</button>` : '-'}</td>
+      </tr>`);
+  });
+}
+
+function delDrug(i){
+  drugs.splice(i, 1);
+  localStorage.setItem('ph_drugs', JSON.stringify(drugs));
+  loadDrugs();
+}
+
+function loadReports(){
+  const tb = document.getElementById('reports-table'); tb.innerHTML = '';
+  const sorted = [...reports].sort((a,b)=>new Date(b.time)-new Date(a.time));
+  sorted.forEach(r => {
+    tb.insertAdjacentHTML('beforeend', `<tr><td>${r.fname}</td><td>${r.lname}</td><td>${r.text}</td><td>${r.time}</td></tr>`);
+  });
+}
+
+function exportReports(){
+  const csv = 'نام,نام‌خانوادگی,متن,زمان\n' + reports.map(r => `${r.fname},${r.lname},"${r.text}",${r.time}`).join('\n');
+  const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'reports.csv';
+  a.click();
+}
+
+function submitReport(){
+  const fname = document.getElementById('fname').value.trim();
+  const lname = document.getElementById('lname').value.trim();
+  const text  = document.getElementById('reportText').value.trim();
+  if(!fname || !lname || !text){ alert('لطفاً تمام فیلدها را پر کنید'); return; }
+  const time = new Date().toLocaleString('fa-IR');
+  reports.push({ fname, lname, text, time });
+  localStorage.setItem('ph_reports', JSON.stringify(reports));
+  alert('✅ گزارش ثبت شد');
+  document.getElementById('fname').value = '';
+  document.getElementById('lname').value = '';
+  document.getElementById('reportText').value = '';
+  show('home-page');
+}
+
+show('home-page');
+</script>
+</body>
+</html>
